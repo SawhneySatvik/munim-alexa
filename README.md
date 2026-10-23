@@ -9,7 +9,9 @@ This repo puts Munim behind **Alexa+** as a self-hosted **MCP server (Streamable
 do is answer *"which ingredients are running low at Hazratganj?"* from your own stock records, with every number cited,
 or say "Cannot verify" instead of guessing. It also can't take the owner's yes or no on a proposal. This repo adds those.
 
-- **Live:** https://munim-alexa.vercel.app (Echo Show simulator) · MCP endpoint `https://munim-alexa.vercel.app/mcp`
+- **Live, inside the Cobnut Bakehouse website:** https://munim-cobnut-alexa.vercel.app/alexa · MCP endpoint
+  `https://munim-cobnut-alexa.vercel.app/mcp` (see [`cobnut-integration/`](cobnut-integration/))
+- **Standalone:** https://munim-alexa.vercel.app (Echo Show simulator) · MCP endpoint `https://munim-alexa.vercel.app/mcp`
 - **Demo business:** Cobnut Bakehouse, a synthetic two-outlet bakery in Lucknow running on the live Munim deployment.
   All data is synthetic.
 
