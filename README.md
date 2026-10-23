@@ -61,7 +61,10 @@ server, the citation resolver, the voice-first tool design, the Echo Show client
 MIT licence.
 
 ## AWS adapter
-`adapters/aws/` holds AWS counterparts of Munim's GCP cloud adapters: `idp-cognito` (Amazon Cognito user pools in place
-of Identity Platform: ID-token verification against the pool's JWKS, plus the `InitiateAuth` password grant) and
-`blob-s3` (Amazon S3 in place of Cloud Storage for the blob port). Tests run offline: `node --test 'adapters/aws/**/*.test.js'`. See
+`adapters/aws/` holds AWS counterparts of Munim's cloud adapters, four in all: `idp-cognito` (Amazon Cognito user pools
+in place of Identity Platform: ID-token verification against the pool's JWKS, plus the `InitiateAuth` password grant),
+`blob-s3` (Amazon S3 in place of Cloud Storage for the blob port), `llm-bedrock` (Amazon Bedrock Converse API in place of
+Gemini / Vertex AI model calls, with per-role model ids) and `db-rds` (Amazon RDS / Aurora PostgreSQL in place of
+Supabase / Cloud SQL Postgres: a verified-TLS `pg` config with optional IAM auth tokens). Tests run offline:
+`node --test 'adapters/aws/**/*.test.js'`. See
 [`adapters/aws/README.md`](adapters/aws/README.md).
