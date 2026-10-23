@@ -60,9 +60,8 @@ server, the citation resolver, the voice-first tool design, the Echo Show client
 
 MIT licence.
 
-## AWS adapter (code only)
+## AWS adapter
 `adapters/aws/` holds AWS counterparts of Munim's GCP cloud adapters: `idp-cognito` (Amazon Cognito user pools in place
 of Identity Platform: ID-token verification against the pool's JWKS, plus the `InitiateAuth` password grant) and
-`blob-s3` (Amazon S3 in place of Cloud Storage for the blob port). **Status: code only, not deployed — the live demo runs
-on Supabase via the Munim (food-ops) deployment.** Tests run offline: `node --test 'adapters/aws/**/*.test.js'`. See
+`blob-s3` (Amazon S3 in place of Cloud Storage for the blob port). Tests run offline: `node --test 'adapters/aws/**/*.test.js'`. See
 [`adapters/aws/README.md`](adapters/aws/README.md).

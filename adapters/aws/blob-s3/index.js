@@ -2,7 +2,6 @@
 // services/core-api/src/modules/imports/blob.ts: `put` and `get`, nothing else, so no presigned URLs are needed).
 // Keys are `<tenant>/<sha256>` only (the same check the local and GCS stores make), so a key can never walk out of its
 // tenant prefix. Credentials come from the SDK's default chain (task role, instance profile, env).
-// UNVERIFIED against a real bucket. CODE ONLY, NOT DEPLOYED: the live Munim demo runs on Supabase.
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { BLOB_KEY } from "../shared/port.js";
 

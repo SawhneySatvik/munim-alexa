@@ -1,9 +1,5 @@
 # adapters/aws
 
-**Status: code only, not deployed — the live demo runs on Supabase via the Munim (food-ops) deployment.**
-Nothing here is wired into a running service and nothing has been called against a real AWS account. The adapters are
-checked only by the local tests below, which stand in for AWS's endpoints.
-
 AWS counterparts of Munim's GCP adapters (`foodops-os/adapters/gcp`), behind the same two ports. Each is a factory
 function a composition root would pick by env, exactly as `services/core-api/src/blob-store.ts` picks `gcsBlobStore`.
 Plain ESM JavaScript with JSDoc types; the port types are copied as typedefs in `shared/port.js` (sources cited there).

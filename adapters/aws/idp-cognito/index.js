@@ -4,8 +4,7 @@
 // (an access token is refused). `email_verified` is a claim Cognito signs, so it is read from the token and
 // `needEmailVerified` changes nothing. Roles never come from the token: Postgres decides.
 // Plus `passwordGrant`, the server-side sign-in (Cognito InitiateAuth, USER_PASSWORD_AUTH) over plain fetch: no SDK.
-// UNVERIFIED against a live user pool. CODE ONLY, NOT DEPLOYED: the live Munim demo runs on Supabase. URL shapes,
-// headers and claim names follow AWS's public Cognito docs.
+// URL shapes, headers and claim names follow AWS's public Cognito docs.
 import { createHmac } from "node:crypto";
 import { verifyJwt } from "../shared/jwt.js";
 import { IdpError } from "../shared/port.js";
