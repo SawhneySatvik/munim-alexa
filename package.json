@@ -1,0 +1,16 @@
+{
+  "name": "munim-alexa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Munim on Alexa+: a self-hosted MCP server (Streamable HTTP, spec 2025-11-25) over the live Munim API, plus a simulated Echo Show client",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "check": "node scripts/check.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "^3.25.76"
+  }
+}

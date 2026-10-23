@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Munim on Echo Show</title>
+<style>
+  :root {
+    --bg: #0f0d0b; --frame: #1b1815; --screen: #f6efe3; --ink: #2a1d14; --muted: #7a6656;
+    --red: #b3261e; --green: #1f7a4a; --gold: #c8932e; --card: #fffaf1; --line: #e6d8c3;
+    --wire-bg: #14110e; --wire-ink: #d9cbb5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+         min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px 16px; gap: 16px; }
+  .label { color: #b9a68e; font-size: 13px; letter-spacing: .02em; text-align: center; }
+  .label b { color: #f1e4cf; }
+  .device { width: min(1024px, 100%); background: var(--frame); border-radius: 28px; padding: 18px; box-shadow: 0 30px 80px #000a; }
+  .screen { background: var(--screen); border-radius: 14px; aspect-ratio: 1024 / 600; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto; }
+  .top { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px 0; color: var(--muted); font-size: 14px; }
+  .brand { font-weight: 700; color: var(--red); letter-spacing: .04em; }
+  .stage { padding: 10px 22px; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+  .heard { font-size: clamp(16px, 2.2vw, 22px); color: var(--muted); font-style: italic; min-height: 1.4em; }
+  .reply { font-size: clamp(20px, 3vw, 32px); font-weight: 600; line-height: 1.25; }
+  .cards { display: flex; gap: 12px; flex-wrap: wrap; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; min-width: 150px; flex: 1; }
+  .card .k { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .card .v { font-size: clamp(20px, 2.6vw, 30px); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .v.red { color: var(--red); } .v.green { color: var(--green); }
+  .rows { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .rows td { padding: 6px 4px; border-bottom: 1px dashed var(--line); }
+  .rows td:last-child { text-align: right; font-weight: 600; }
+  .bar { display: flex; gap: 10px; align-items: center; padding: 12px 22px 16px; border-top: 1px solid var(--line); }
+  .mic { width: 54px; height: 54px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; font-size: 22px; cursor: pointer; flex: none; }
+  .mic.on { background: #1a73e8; box-shadow: 0 0 0 6px #1a73e855; }
+  .bar input { flex: 1; min-width: 0; font: inherit; padding: 12px 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff; }
+  .chips { width: min(1024px, 100%); display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .chip { background: #2a2420; color: #f1e4cf; border: 1px solid #3a322c; border-radius: 999px; padding: 8px 14px; cursor: pointer; font: inherit; font-size: 14px; }
+  .chip:hover { border-color: var(--gold); }
+  details { width: min(1024px, 100%); }
+  summary { color: #b9a68e; cursor: pointer; font-size: 13px; }
+  pre { background: var(--wire-bg); color: var(--wire-ink); border-radius: 10px; padding: 12px; font-size: 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+  .ring { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #3b3; margin-right: 6px; }
+  .ring.off { background: #b33; }
+  @media (max-width: 640px) { .screen { aspect-ratio: auto; min-height: 70vh; } }
+
+  .mode { display:flex; gap:8px; justify-content:center; }
+  .mode button { background:#2a2420; color:#f1e4cf; border:1px solid #3a322c; border-radius:999px; padding:6px 14px; font:inherit; font-size:14px; cursor:pointer; }
+  .mode button.on { background:#f1e4cf; color:#1b1815; }
+  .cite { font-size:13px; color:var(--muted); }
+  .cite b { color:var(--ink); }
+  .thinking { color:var(--muted); font-size:16px; }
+</style>
+</head>
+<body>
+  <div class="label"><b>Simulated Alexa+ on Echo Show</b> · a real MCP client (Streamable HTTP, spec 2025-11-25) talking to the Munim MCP server, which reads the live Munim books of Cobnut Bakehouse (synthetic demo business)</div>
+  <div class="mode"><button id="m-owner" class="on">Owner · Nandini</button><button id="m-customer">Customer</button></div>
+
+  <div class="device"><div class="screen">
+    <div class="top"><span class="brand">MUNIM · मुनीम</span><span id="status"><span class="ring off"></span>connecting…</span></div>
+    <div class="stage">
+      <div class="heard" id="heard">Try: "How is the business doing?"</div>
+      <div class="reply" id="reply">Good evening, Nandini. Ask me anything about Cobnut — I answer only from your books.</div>
+      <div id="cards"></div>
+    </div>
+    <div class="bar">
+      <button class="mic" id="mic" title="Speak (en-IN)">🎙</button>
+      <input id="text" placeholder="Type what you'd say to Alexa, then Enter" autocomplete="off">
+    </div>
+  </div></div>
+
+  <div class="chips" id="chips"></div>
+  <details><summary>MCP wire log (JSON-RPC over Streamable HTTP)</summary><pre id="wire"></pre></details>
+
+<script>
+
+const MCP_URL = new URL("/mcp", location.href).href;
+const PROTOCOL = "2025-11-25";
+let rpcId = 0, negotiated = null;
+const $ = (id) => document.getElementById(id);
+
+function logWire(dir, obj) {
+  const line = `${dir} ${JSON.stringify(obj).slice(0, 700)}\n`;
+  $("wire").textContent = line + $("wire").textContent.slice(0, 20000);
+}
+
+async function rpc(method, params, notify = false) {
+  const msg = { jsonrpc: "2.0", method, ...(params ? { params } : {}), ...(notify ? {} : { id: ++rpcId }) };
+  logWire("→", msg);
+  const headers = { "Content-Type": "application/json", "Accept": "application/json, text/event-stream" };
+  if (negotiated) headers["MCP-Protocol-Version"] = negotiated;
+  const res = await fetch(MCP_URL, { method: "POST", headers, body: JSON.stringify(msg) });
+  if (notify) return null;
+  const ctype = res.headers.get("content-type") || "";
+  let body;
+  if (ctype.includes("text/event-stream")) {
+    const text = await res.text();
+    const data = text.split("\n").filter((l) => l.startsWith("data:")).map((l) => l.slice(5).trim()).pop();
+    body = JSON.parse(data);
+  } else {
+    body = await res.json();
+  }
+  logWire("←", body);
+  if (body.error) throw new Error(body.error.message);
+  return body.result;
+}
+
+async function connect() {
+  const init = await rpc("initialize", {
+    protocolVersion: PROTOCOL, capabilities: {},
+    clientInfo: { name: "munim-echo-show-sim", version: "0.1.0" },
+  });
+  negotiated = init.protocolVersion;
+  await rpc("notifications/initialized", undefined, true);
+  const tools = await rpc("tools/list", {});
+  $("status").innerHTML = `<span class="ring"></span>${init.serverInfo.name} · MCP ${negotiated} · ${tools.tools.length} tools`;
+}
+
+async function callTool(name, args) {
+  const r = await rpc("tools/call", { name, arguments: args });
+  const text = (r.content || []).map((c) => c.text || "").join(" ");
+  return { ok: !r.isError, data: r.structuredContent || safeJson(text), text };
+}
+function safeJson(t) { try { return JSON.parse(t); } catch { return {}; } }
+
+
+// ---- the simulated "Alexa" turn: utterance -> tool ----
+let mode = "owner", lastApprovals = [];
+const NUMW = { one: 1, first: 1, two: 2, second: 2, three: 3, third: 3, four: 4, fourth: 4, five: 5, fifth: 5 };
+function pickNumber(t) {
+  const d = t.match(/\b(\d+)\b/); if (d) return +d[1];
+  const w = t.toLowerCase().split(/\W+/).find((x) => NUMW[x]); return w ? NUMW[w] : 1;
+}
+function itemOf(t) {
+  const m = t.match(/(?:have|got|is (?:the|there)?|are (?:the|there)?|any)\s+(?:a |an |the |any )?(.+?)(?:\s+(?:available|in stock|today|left|at\b|\?)|\?|$)/i);
+  return (m ? m[1] : t).replace(/[?.!]/g, "").trim();
+}
+function outletOf(t) { return /gomti/i.test(t) ? "Gomti Nagar" : /hazrat/i.test(t) ? "Hazratganj" : undefined; }
+function route(s) {
+  const t = s.toLowerCase();
+  if (/^\s*(yes,?\s*)?approve/.test(t)) {
+    const d = lastApprovals[pickNumber(t) - 1];
+    return d ? ["approve_draft", { draft_id: d.draft_id }] : ["say", "Ask me what's waiting for approval first."];
+  }
+  if (/^\s*reject/.test(t)) {
+    const d = lastApprovals[pickNumber(t) - 1];
+    return d ? ["reject_draft", { draft_id: d.draft_id, reason: "Not now — rejected by the owner on Alexa" }] : ["say", "Ask me what's waiting for approval first."];
+  }
+  if (/approv|waiting for me|pending|proposals/.test(t)) return ["pending_approvals", { limit: 5 }];
+  if (/how('s| is) (the )?(business|shop|bakery|cobnut)|brief|summary|anything i should know/.test(t)) return ["shop_brief", {}];
+  if (/pickup|slot/.test(t)) return ["pickup_slots", { outlet: outletOf(s) }];
+  if (/menu/.test(t)) return ["menu", { outlet: outletOf(s) }];
+  if (/available|do you have|have you got|in stock|sold out/.test(t)) return ["item_availability", { item: itemOf(s), outlet: outletOf(s) }];
+  return ["ask_munim", { question: s }];
+}
+
+// ---- rendering ----
+const esc = (x) => String(x ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+function card(k, v, cls = "") { return `<div class="card"><div class="k">${esc(k)}</div><div class="v ${cls}">${esc(v)}</div></div>`; }
+function rowsCard(title, rows) {
+  return `<div class="card" style="flex-basis:100%"><div class="k">${esc(title)}</div><table class="rows">${
+    rows.map(([a, b]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join("")}</table></div>`;
+}
+function render(tool, d) {
+  switch (tool) {
+    case "shop_brief":
+      return `<div class="cards">${card("Open findings", d.open_findings)}${card("High / critical", d.high_findings, "red")}${card("Awaiting you", d.pending_approvals, "green")}</div>
+        <div class="cards">${rowsCard("Most urgent", d.top_findings.map((f) => [f.severity + " · " + f.type, f.impact || ""]))}</div>`;
+    case "ask_munim":
+      return d.citations.length
+        ? `<div class="cards">${rowsCard("Cited from the books" + (d.specialist ? " · " + d.specialist + " specialist" : ""), d.citations.map((c) => [c.field || c.source, c.value]))}</div>`
+        : `<div class="cite">${d.abstained ? "Munim abstained rather than guess." : ""}</div>`;
+    case "pending_approvals":
+      lastApprovals = d.approvals;
+      return `<div class="cards">${rowsCard(`Waiting for your decision · ${d.total}`, d.approvals.map((a) => ["#" + a.number + " " + a.summary, a.source || ""]))}</div>`;
+    case "approve_draft": case "reject_draft":
+      return `<div class="cards">${card(d.decision === "approve" ? "Approved" : "Rejected", d.summary, d.decision === "approve" ? "green" : "red")}</div>`;
+    case "item_availability":
+      return `<div class="cards">${card(d.outlet, d.found ? d.item : "Not on the menu", d.available ? "green" : "red")}${d.price ? card("Price", d.price) : ""}</div>`;
+    case "menu":
+      return `<div class="cards">${rowsCard(d.outlet + " · today", d.items.slice(0, 8).map((i) => [i.name, i.available === false ? "sold out" : (i.price || "")]))}</div>`;
+    case "pickup_slots":
+      return `<div class="cards">${rowsCard(d.outlet + " · pickup", d.slots.length ? d.slots.map((s) => [s.label, s.available === false ? "full" : "open"]) : [["No open windows right now", ""]])}</div>`;
+  }
+  return "";
+}
+function speak(text) {
+  if (!("speechSynthesis" in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/₹\s?/g, "rupees "));
+  u.lang = "en-IN"; speechSynthesis.speak(u);
+}
+async function handle(utterance) {
+  if (!utterance.trim()) return;
+  $("heard").textContent = `“${utterance}”`;
+  const [tool, args] = route(utterance);
+  if (tool === "say") { $("reply").textContent = args; $("cards").innerHTML = ""; speak(args); return; }
+  const t0 = Date.now();
+  $("reply").innerHTML = `<span class="thinking">${tool === "ask_munim" ? "Munim is checking the books…" : "One moment…"}</span>`;
+  $("cards").innerHTML = "";
+  const tick = setInterval(() => { const el = document.querySelector(".thinking"); if (el) el.textContent = `Munim is checking the books… ${Math.round((Date.now() - t0) / 1000)}s`; }, 1000);
+  try {
+    const res = await callTool(tool, args);
+    clearInterval(tick);
+    if (!res.ok) { $("reply").textContent = res.text; speak(res.text); return; }
+    $("reply").textContent = res.data.speech; $("cards").innerHTML = render(tool, res.data); speak(res.data.speech);
+  } catch (e) { clearInterval(tick); $("reply").textContent = "Couldn't reach Munim: " + e.message; }
+}
+
+// ---- input ----
+const CHIPS = {
+  owner: ["How is the business doing?", "Which ingredients are running low at Hazratganj?", "Why did waste spike last week?", "What's waiting for my approval?", "Reject number 1", "Approve number 2"],
+  customer: ["Is the hazelnut croissant available today?", "Do you have cold coffee at Gomti Nagar?", "What's on the menu at Hazratganj?", "Any pickup slots at Hazratganj?"],
+};
+function setMode(m) {
+  mode = m; $("m-owner").classList.toggle("on", m === "owner"); $("m-customer").classList.toggle("on", m === "customer");
+  $("chips").innerHTML = "";
+  CHIPS[m].forEach((p) => { const b = document.createElement("button"); b.className = "chip"; b.textContent = p; b.onclick = () => handle(p); $("chips").appendChild(b); });
+  $("heard").textContent = m === "owner" ? 'Try: "How is the business doing?"' : 'Try: "Is the hazelnut croissant available today?"';
+  $("reply").textContent = m === "owner" ? "Good evening, Nandini. Ask me anything about Cobnut — I answer only from your books." : "Hi! Ask Cobnut Bakehouse what's fresh today.";
+  $("cards").innerHTML = "";
+}
+$("m-owner").onclick = () => setMode("owner"); $("m-customer").onclick = () => setMode("customer");
+$("text").addEventListener("keydown", (e) => { if (e.key === "Enter") { handle(e.target.value); e.target.value = ""; } });
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR) {
+  const rec = new SR(); rec.lang = "en-IN"; rec.interimResults = false;
+  rec.onresult = (e) => handle(e.results[0][0].transcript);
+  rec.onend = () => $("mic").classList.remove("on");
+  $("mic").onclick = () => { $("mic").classList.add("on"); rec.start(); };
+} else { $("mic").title = "Voice input needs Chrome"; $("mic").style.opacity = .4; }
+setMode("owner");
+connect().catch((e) => { $("status").innerHTML = `<span class="ring off"></span>offline: ${e.message}`; });
+</script>
+</body>
+</html>
